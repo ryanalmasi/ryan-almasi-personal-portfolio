@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { FaCalendarAlt, FaMapMarkerAlt, FaCode, FaTrophy } from 'react-icons/fa'
-import { workExperiences } from '../data/workExperience'
+import { getAllExperiences, CompanyExperience, WorkExperience as WorkExp } from '../data/workExperience'
+import FlipClock from './FlipClock'
 
 const WorkExperienceSection = styled.section`
   padding: ${({ theme }) => theme.spacing['5xl']} 0;
@@ -44,12 +45,17 @@ const SectionTitle = styled.h2`
   }
 `
 
-const SectionSubtitle = styled.p`
+const SectionSubtitle = styled.div`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   color: ${({ theme }) => theme.colors.light.textSecondary};
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.lg};
 
   [data-theme='dark'] & {
     color: ${({ theme }) => theme.colors.dark.textSecondary};
@@ -145,7 +151,7 @@ const CompanyName = styled.h3`
   }
 `
 
-const PositionTitle = styled.h4`
+const JobTitle = styled.h4`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.semibold};
   color: ${({ theme }) => theme.colors.light.primary};
@@ -223,22 +229,41 @@ const AchievementsList = styled.ul`
 `
 
 const AchievementItem = styled.li`
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`
+
+const AchievementTitle = styled.h5`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.light.primary};
+  margin: 0 0 ${({ theme }) => theme.spacing.xs} 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
-  color: ${({ theme }) => theme.colors.light.textSecondary};
-  line-height: 1.5;
 
   [data-theme='dark'] & {
-    color: ${({ theme }) => theme.colors.dark.textSecondary};
+    color: ${({ theme }) => theme.colors.dark.primary};
   }
 
   &::before {
     content: '🏆';
     flex-shrink: 0;
-    margin-top: 2px;
+  }
+`
+
+const AchievementDescription = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.light.textSecondary};
+  line-height: 1.5;
+  margin: 0;
+  padding-left: calc(1.2em + ${({ theme }) => theme.spacing.sm});
+
+  [data-theme='dark'] & {
+    color: ${({ theme }) => theme.colors.dark.textSecondary};
   }
 `
 
@@ -275,8 +300,242 @@ const TechnologyTag = styled.span`
   }
 `
 
+// Grouped Experience Components
+const GroupedCard = styled.div`
+  background-color: ${({ theme }) => theme.colors.light.surface};
+  border: 1px solid ${({ theme }) => theme.colors.light.border};
+  border-radius: ${({ theme }) => theme.borderRadius.xl};
+  padding: ${({ theme }) => theme.spacing['2xl']};
+  transition: all ${({ theme }) => theme.transitions.normal};
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      ${({ theme }) => theme.colors.light.primary},
+      ${({ theme }) => theme.colors.light.secondary}
+    );
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-color: ${({ theme }) => theme.colors.light.primary};
+  }
+
+  [data-theme='dark'] & {
+    background-color: ${({ theme }) => theme.colors.dark.surface};
+    border-color: ${({ theme }) => theme.colors.dark.border};
+
+    &::before {
+      background: linear-gradient(
+        to bottom,
+        ${({ theme }) => theme.colors.dark.primary},
+        ${({ theme }) => theme.colors.dark.secondary}
+      );
+    }
+
+    &:hover {
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border-color: ${({ theme }) => theme.colors.dark.primary};
+    }
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
+    padding: ${({ theme }) => theme.spacing['3xl']};
+  }
+`
+
+const GroupedHeader = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
+  padding-bottom: ${({ theme }) => theme.spacing.lg};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.light.border};
+
+  [data-theme='dark'] & {
+    border-bottom-color: ${({ theme }) => theme.colors.dark.border};
+  }
+`
+
+const CompanyDescription = styled.p`
+  font-size: ${({ theme }) => theme.fontSizes.base};
+  color: ${({ theme }) => theme.colors.light.textSecondary};
+  line-height: 1.6;
+  margin: ${({ theme }) => theme.spacing.md} 0 0 0;
+  font-style: italic;
+
+  [data-theme='dark'] & {
+    color: ${({ theme }) => theme.colors.dark.textSecondary};
+  }
+`
+
+const PositionsList = styled.div`
+  position: relative;
+`
+
+const PositionItem = styled.div`
+  position: relative;
+  padding-left: ${({ theme }) => theme.spacing['2xl']};
+  margin-bottom: ${({ theme }) => theme.spacing['2xl']};
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: ${({ theme }) => theme.colors.light.primary};
+    border: 3px solid ${({ theme }) => theme.colors.light.surface};
+    z-index: 2;
+
+    [data-theme='dark'] & {
+      background-color: ${({ theme }) => theme.colors.dark.primary};
+      border-color: ${({ theme }) => theme.colors.dark.surface};
+    }
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 24px;
+    bottom: -16px;
+    width: 2px;
+    background-color: ${({ theme }) => theme.colors.light.border};
+
+    [data-theme='dark'] & {
+      background-color: ${({ theme }) => theme.colors.dark.border};
+    }
+  }
+
+  &:last-child::after {
+    display: none;
+  }
+`
+
+const PositionHeader = styled.div`
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+`
+
+const PositionTitle = styled.h4`
+  font-size: ${({ theme }) => theme.fontSizes.lg};
+  font-weight: ${({ theme }) => theme.fontWeights.semibold};
+  color: ${({ theme }) => theme.colors.light.text};
+  margin: 0 0 ${({ theme }) => theme.spacing.xs} 0;
+
+  [data-theme='dark'] & {
+    color: ${({ theme }) => theme.colors.dark.text};
+  }
+`
+
+const PositionDates = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  font-size: ${({ theme }) => theme.fontSizes.sm};
+  color: ${({ theme }) => theme.colors.light.textSecondary};
+
+  [data-theme='dark'] & {
+    color: ${({ theme }) => theme.colors.dark.textSecondary};
+  }
+
+  svg {
+    color: ${({ theme }) => theme.colors.light.primary};
+    flex-shrink: 0;
+
+    [data-theme='dark'] & {
+      color: ${({ theme }) => theme.colors.dark.primary};
+    }
+  }
+`
+
+// Type guard functions
+const isGroupedExperience = (exp: WorkExp | CompanyExperience): exp is CompanyExperience => {
+  return 'positions' in exp && 'isGrouped' in exp;
+}
+
+// Helper function to get all technologies for a grouped experience
+const getGroupedTechnologies = (company: CompanyExperience): string[] => {
+  const allTechs = company.positions.flatMap(pos => pos.technologies);
+  return Array.from(new Set(allTechs));
+}
+
+// Date parsing and experience calculation
+const parseDate = (dateStr: string): Date => {
+  return new Date(dateStr + ' 1');
+}
+
+const calculateTotalExperience = (): { years: number; months: number; totalMonths: number } => {
+  const allExperiences = getAllExperiences();
+  const periods: Array<{ start: Date; end: Date }> = [];
+
+  // Collect all experience periods
+  allExperiences.forEach((exp) => {
+    if (isGroupedExperience(exp)) {
+      exp.positions.forEach((position) => {
+        periods.push({
+          start: parseDate(position.startDate),
+          end: position.current ? new Date() : parseDate(position.endDate)
+        });
+      });
+    } else {
+      periods.push({
+        start: parseDate(exp.startDate),
+        end: exp.current ? new Date() : parseDate(exp.endDate)
+      });
+    }
+  });
+
+  // Sort periods by start date
+  periods.sort((a, b) => a.start.getTime() - b.start.getTime());
+
+  // Merge overlapping periods
+  const mergedPeriods: Array<{ start: Date; end: Date }> = [];
+  periods.forEach((period) => {
+    if (mergedPeriods.length === 0) {
+      mergedPeriods.push(period);
+    } else {
+      const last = mergedPeriods[mergedPeriods.length - 1];
+      if (period.start <= last.end) {
+        last.end = new Date(Math.max(last.end.getTime(), period.end.getTime()));
+      } else {
+        mergedPeriods.push(period);
+      }
+    }
+  });
+
+  // Calculate total months
+  let totalMonths = 0;
+  mergedPeriods.forEach((period) => {
+    const yearsDiff = period.end.getFullYear() - period.start.getFullYear();
+    const monthsDiff = period.end.getMonth() - period.start.getMonth();
+    totalMonths += yearsDiff * 12 + monthsDiff;
+  });
+
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+
+  return { years, months, totalMonths };
+}
+
+
 export default function WorkExperience() {
   const workExperienceRef = useRef<HTMLElement>(null)
+  const allExperiences = getAllExperiences()
+  const experienceData = calculateTotalExperience()
+  const [shouldAnimateFlipClock, setShouldAnimateFlipClock] = useState(false)
 
   useEffect(() => {
     if (workExperienceRef.current && typeof window !== 'undefined') {
@@ -296,7 +555,11 @@ export default function WorkExperience() {
               trigger: workExperienceRef.current,
               start: 'top 80%',
               end: 'bottom 20%',
-              toggleActions: 'play none none reverse'
+              toggleActions: 'play none none reverse',
+              onEnter: () => setShouldAnimateFlipClock(true),
+              onLeave: () => setShouldAnimateFlipClock(false),
+              onEnterBack: () => setShouldAnimateFlipClock(true),
+              onLeaveBack: () => setShouldAnimateFlipClock(false)
             }
           })
 
@@ -318,60 +581,124 @@ export default function WorkExperience() {
     }
   }, [])
 
+  const renderIndividualExperience = (experience: WorkExp) => (
+    <ExperienceCard key={experience.id} className="experience-card">
+      <ExperienceHeader>
+        <PositionInfo>
+          <CompanyName>{experience.company}</CompanyName>
+          <JobTitle>{experience.position}</JobTitle>
+          <ExperienceType>{experience.type.replace('-', ' ')}</ExperienceType>
+        </PositionInfo>
+        
+        <ExperienceMeta>
+          <MetaItem>
+            <FaCalendarAlt />
+            <span>
+              {experience.startDate} - {experience.current ? 'Present' : experience.endDate}
+            </span>
+          </MetaItem>
+          <MetaItem>
+            <FaMapMarkerAlt />
+            <span>{experience.location}</span>
+          </MetaItem>
+        </ExperienceMeta>
+      </ExperienceHeader>
+
+      <Description>{experience.description}</Description>
+
+      <AchievementsList>
+        {experience.achievements.map((achievement, index) => (
+          <AchievementItem key={index}>
+            <AchievementTitle>{achievement.title}</AchievementTitle>
+            <AchievementDescription>{achievement.description}</AchievementDescription>
+          </AchievementItem>
+        ))}
+      </AchievementsList>
+
+      <TechnologiesList>
+        {experience.technologies.map((tech) => (
+          <TechnologyTag key={tech}>
+            <FaCode />
+            {tech}
+          </TechnologyTag>
+        ))}
+      </TechnologiesList>
+    </ExperienceCard>
+  )
+
+  const renderGroupedExperience = (company: CompanyExperience) => (
+    <GroupedCard key={company.id} className="experience-card">
+      <GroupedHeader>
+        <ExperienceHeader>
+          <PositionInfo>
+            <CompanyName>{company.company}</CompanyName>
+            <MetaItem>
+              <FaMapMarkerAlt />
+              <span>{company.location}</span>
+            </MetaItem>
+          </PositionInfo>
+        </ExperienceHeader>
+        <CompanyDescription>{company.description}</CompanyDescription>
+      </GroupedHeader>
+
+      <PositionsList>
+        {company.positions.map((position) => (
+          <PositionItem key={position.id}>
+            <PositionHeader>
+              <PositionTitle>{position.position}</PositionTitle>
+              <PositionDates>
+                <FaCalendarAlt />
+                <span>
+                  {position.startDate} - {position.current ? 'Present' : position.endDate}
+                </span>
+                <ExperienceType>{position.type.replace('-', ' ')}</ExperienceType>
+              </PositionDates>
+            </PositionHeader>
+
+            <Description>{position.description}</Description>
+
+            <AchievementsList>
+              {position.achievements.map((achievement, index) => (
+                <AchievementItem key={index}>
+                  <AchievementTitle>{achievement.title}</AchievementTitle>
+                  <AchievementDescription>{achievement.description}</AchievementDescription>
+                </AchievementItem>
+              ))}
+            </AchievementsList>
+
+            <TechnologiesList>
+              {position.technologies.map((tech) => (
+                <TechnologyTag key={tech}>
+                  <FaCode />
+                  {tech}
+                </TechnologyTag>
+              ))}
+            </TechnologiesList>
+          </PositionItem>
+        ))}
+      </PositionsList>
+    </GroupedCard>
+  )
+
   return (
     <WorkExperienceSection id="work-experience" ref={workExperienceRef}>
       <Container>
         <SectionHeader className="work-experience-header">
           <SectionTitle>Work Experience</SectionTitle>
           <SectionSubtitle>
-            My professional journey in software development and technology
+            <span>My professional journey in software development and technology</span>
+            <FlipClock years={experienceData.years} months={experienceData.months} shouldAnimate={shouldAnimateFlipClock} />
           </SectionSubtitle>
         </SectionHeader>
 
         <ExperienceGrid>
-          {workExperiences.map((experience) => (
-            <ExperienceCard key={experience.id} className="experience-card">
-              <ExperienceHeader>
-                <PositionInfo>
-                  <CompanyName>{experience.company}</CompanyName>
-                  <PositionTitle>{experience.position}</PositionTitle>
-                  <ExperienceType>{experience.type.replace('-', ' ')}</ExperienceType>
-                </PositionInfo>
-                
-                <ExperienceMeta>
-                  <MetaItem>
-                    <FaCalendarAlt />
-                    <span>
-                      {experience.startDate} - {experience.current ? 'Present' : experience.endDate}
-                    </span>
-                  </MetaItem>
-                  <MetaItem>
-                    <FaMapMarkerAlt />
-                    <span>{experience.location}</span>
-                  </MetaItem>
-                </ExperienceMeta>
-              </ExperienceHeader>
-
-              <Description>{experience.description}</Description>
-
-              <AchievementsList>
-                {experience.achievements.map((achievement, index) => (
-                  <AchievementItem key={index}>
-                    {achievement}
-                  </AchievementItem>
-                ))}
-              </AchievementsList>
-
-              <TechnologiesList>
-                {experience.technologies.map((tech) => (
-                  <TechnologyTag key={tech}>
-                    <FaCode />
-                    {tech}
-                  </TechnologyTag>
-                ))}
-              </TechnologiesList>
-            </ExperienceCard>
-          ))}
+          {allExperiences.map((experience) => {
+            if (isGroupedExperience(experience)) {
+              return renderGroupedExperience(experience)
+            } else {
+              return renderIndividualExperience(experience)
+            }
+          })}
         </ExperienceGrid>
       </Container>
     </WorkExperienceSection>

@@ -18,7 +18,7 @@ export const GITHUB_CONFIG = {
     'ryanalmasi', // Profile README
     'portfolio', // If you have a separate portfolio repo
     'resume', // Resume repository
-  ],
+  ] as string[],
   
   // Repository topics to prioritize (repositories with these topics will be shown first)
   PRIORITY_TOPICS: [
