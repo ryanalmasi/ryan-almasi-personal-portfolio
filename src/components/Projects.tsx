@@ -469,7 +469,7 @@ export default function Projects() {
         <SectionHeader className="projects-header">
           <SectionTitle>Featured Projects</SectionTitle>
           <SectionSubtitle>
-            A showcase of my recent work and side projects
+            Some cool projects I've worked on
           </SectionSubtitle>
         </SectionHeader>
 

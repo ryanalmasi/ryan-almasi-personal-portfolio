@@ -220,18 +220,18 @@ dark mode
   }
 
   ul.play li.flip-clock-active {
-    animation: ${asd} 0.5s 0.5s linear both;
+    animation: ${asd} 0.4s 0.4s linear both;
     z-index: 5;
   }
 
   ul.play li.flip-clock-active .down {
     z-index: 2;
-    animation: ${turn} 0.5s 0.5s linear both;
+    animation: ${turn} 0.4s 0.4s linear both;
   }
 
   ul.play li.flip-clock-before .up {
     z-index: 2;
-    animation: ${turn2} 0.5s linear both;
+    animation: ${turn2} 0.4s linear both;
   }
 
   ul li.flip-clock-active {
@@ -241,22 +241,22 @@ dark mode
   /* Shadow animations */
   ul.play li.flip-clock-before .up .shadow {
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, black 100%);
-    animation: ${show} 0.5s linear both;
+    animation: ${show} 0.4s linear both;
   }
 
   ul.play li.flip-clock-active .up .shadow {
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, black 100%);
-    animation: ${hide} 0.5s 0.3s linear both;
+    animation: ${hide} 0.4s 0.2s linear both;
   }
 
   ul.play li.flip-clock-before .down .shadow {
     background: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.1) 100%);
-    animation: ${show} 0.5s linear both;
+    animation: ${show} 0.4s linear both;
   }
 
   ul.play li.flip-clock-active .down .shadow {
     background: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.1) 100%);
-    animation: ${hide} 0.5s 0.2s linear both;
+    animation: ${hide} 0.4s 0.2s linear both;
   }
 `
 
@@ -363,10 +363,10 @@ const FlipDigitComponent: React.FC<FlipDigitComponentProps> = ({ target, delay =
             setTimeout(() => {
               setIsPlaying(false);
               if (current < target && shouldAnimate) {
-                setTimeout(flipNext, 100);
+                setTimeout(flipNext, 80);
               }
-            }, 1000);
-          }, 100);
+            }, 800);
+          }, 80);
         }
       };
       

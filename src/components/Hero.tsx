@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { FaGithub, FaLinkedin, FaEnvelope, FaDownload } from 'react-icons/fa'
+import VantaBirdsEffect from './VantaBirdsEffect'
 
 const HeroSection = styled.section`
   min-height: 100vh;
@@ -388,6 +389,16 @@ export default function Hero() {
       <ScrollIndicator className="scroll-indicator">
         Scroll to explore
       </ScrollIndicator>
+      
+      {/* Vanta Birds 3D Animation - Theme-aware colors */}
+      <VantaBirdsEffect 
+        enabled={true}
+        colorMode="variance"
+        quantity={4}
+        birdSize={0.6}
+        wingSpan={15.0}
+        speedLimit={1.5}
+      />
     </HeroSection>
   )
 }
